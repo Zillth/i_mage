@@ -9,7 +9,7 @@
 
 #include "i_mage.h"
 
-void main(int argv, char **argc)
+void main(int argc, char **argv)
 {
-    iniciarProceso(argv, argc);
+    iniciarProceso(argc, argv);
 }

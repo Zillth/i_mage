@@ -9,22 +9,26 @@
 
 #include "i_mage.h"
 
-void iniciarProceso(int argv, char **argc)
+void iniciarProceso(int argc, char **argv)
 {
-    char *archivo = "lily.bmp";
-    char *fileRoute;
-    fileRoute = malloc(sizeof(archivo) + 10);
+    char *archivo, *fileRoute;
+    archivo = malloc(20);
+    fileRoute = malloc(30);
     strcpy(fileRoute, "./files/");
-    strncat(fileRoute, archivo, strlen(archivo) - 4);
-
-    datosImg datos;
-    unsigned char *img = cargarImagen(archivo, &datos, fileRoute);
-    if (img == NULL)
+    for (int i = 1; i < argc; i++)
     {
-        puts("No se pudo procesar la imagen");
-        exit(1);
+        strcpy(archivo, argv[i]);
+        strncat(fileRoute, archivo, strlen(archivo) - 4);
+        datosImg datos;
+        unsigned char *img = cargarImagen(archivo, &datos, fileRoute);
+        if (img == NULL)
+        {
+            puts("No se pudo procesar la imagen");
+            exit(1);
+        }
+        guardarArchivo(&datos, img, fileRoute);
+        strcpy(fileRoute, "./files/");
     }
-    guardarArchivo(&datos, img, fileRoute);
 }
 
 unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute)
