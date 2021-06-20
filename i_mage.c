@@ -12,17 +12,20 @@
 void iniciarProceso(int argc, char **argv)
 {
     clock_t start = clock();
-    char *archivo, *fileRoute;
-    archivo = malloc(20);
-    fileRoute = malloc(30);
     int totalSize = 0;
-    strcpy(fileRoute, "./files/");
+
+#pragma omp parallel for
     for (int i = 1; i < argc; i++)
     {
+        char *archivo, *fileRoute;
+        printf("Procesando imagen en el proceso: %d\n", omp_get_thread_num());
+        archivo = malloc(20);
+        fileRoute = malloc(30);
+        strcpy(fileRoute, "./files/");
         strcpy(archivo, argv[i]);
         strncat(fileRoute, archivo, strlen(archivo) - 4);
         datosImg datos;
-        
+
         unsigned char *img = cargarImagen(archivo, &datos, fileRoute, &totalSize);
         if (img == NULL)
         {
@@ -30,12 +33,12 @@ void iniciarProceso(int argc, char **argv)
             exit(1);
         }
         guardarArchivo(&datos, img, fileRoute);
-        strcpy(fileRoute, "./files/");
+        //strcpy(fileRoute, "./files/");
     }
     clock_t end = clock();
     float transcurrido = (float)(end - start) / CLOCKS_PER_SEC;
     printf("Tiempo de ejecucion: %.3f segundos.\n", transcurrido);
-    printf("Tiempo estimado de transferencia en una VPN de 2.5 kb/s: %.3f segundos.\n", (totalSize/2500.000) + transcurrido);
+    printf("Tiempo estimado de transferencia en una VPN de 2.5 kb/s: %.3f segundos.\n", (totalSize / 2500.000) + transcurrido);
 }
 
 unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute, int *totalSize)
@@ -50,7 +53,6 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute
     if (fileImg == NULL)
         return NULL;
     fread(&type, sizeof(uint16_t), 1, fileImg);
-
     if (type != 19778)
     {
         puts("Imagen no compatible con el programa.");
@@ -61,11 +63,13 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute
     fread(&cabImg, sizeof(cabeceraImg), 1, fileImg);
     fread(metadatos, sizeof(datosImg), 1, fileImg);
 
+    printf("Obteniendo longitud de los archivos en el proceso: %d\n", omp_get_thread_num());
     int tempSize = *totalSize;
-    tempSize += (int) cabImg.size;
+    tempSize += (int)cabImg.size;
     *totalSize = tempSize;
-    guardarInfo(type, cabImg, metadatos, fileRoute);
 
+    printf("Guardando informacion en el proceso: %d\n", omp_get_thread_num());
+    guardarInfo(type, cabImg, metadatos, fileRoute);
     //Lectura de la imagen
     imgData = (unsigned char *)malloc((metadatos->ancho) * (metadatos->alto));
     if (imgData == NULL)

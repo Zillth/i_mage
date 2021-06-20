@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
+#include <omp.h>
 
 //BMP
 typedef struct
