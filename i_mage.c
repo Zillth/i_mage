@@ -11,8 +11,9 @@
 
 void iniciarProceso(int argv, char **argc)
 {
+    char *archivo = "lily.bmp";
     datosImg datos;
-    unsigned char *img = cargarImagen("lena512.bmp", &datos);
+    unsigned char *img = cargarImagen(archivo, &datos);
     if (img == NULL)
     {
         puts("No se pudo procesar la imagen");
@@ -25,6 +26,7 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos)
 {
     cabeceraImg cabImg;
     unsigned char *imgData;
+
     FILE *fileImg;
     uint16_t type;
     fileImg = fopen(filename, "rb");
@@ -63,19 +65,38 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos)
 void guardarArchivo(datosImg *metadatos, unsigned char *pixeles)
 {
     FILE *file;
-    file = fopen("pixels.txt", "wt");
-    int x, y, posX = 0, posY = 0;
+    int valorMedio = 0, mediana = 0;
+    file = fopen("pixeles.txt", "wt");
+    int x, y;
     for (y = metadatos->alto; y > 0; y--)
     {
         for (x = 0; x < metadatos->ancho; x++)
         {
+            valorMedio += pixeles[x + y * (metadatos->ancho)];
             fprintf(file, " %d ", pixeles[x + y * (metadatos->ancho)]);
-            //printf("El pixel en la posicion [%d],[%d] es %d\n", posX, posY, pixeles[x+y*(metadatos->ancho)]);
-            //posX++;
         }
+
         fprintf(file, "\n");
-        //posY++;
     }
+    for (int i = 1; i < (metadatos->ancho * metadatos->alto); i++)
+    {
+        for (int j = 0; j < (metadatos->ancho * metadatos->alto) - 1; j++)
+        {
+            if (pixeles[j] > pixeles[j + 1])
+            {
+                int temp = pixeles[j];
+                pixeles[j] = pixeles[j + 1];
+                pixeles[j + 1] = temp;
+            }
+        }
+    }
+    FILE *procesado;
+    procesado = fopen("procesado.txt", "wt");
+    valorMedio = valorMedio / (metadatos->alto * metadatos->ancho);
+    fprintf(procesado, "El valor medio es : %d\n", valorMedio);
+    mediana = pixeles[(metadatos->alto * metadatos->ancho) / 2];
+    fprintf(procesado, "La mediana es : %d\n", mediana);
+    fclose(procesado);
     fclose(file);
 }
 
