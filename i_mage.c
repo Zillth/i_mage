@@ -15,13 +15,15 @@ void iniciarProceso(int argc, char **argv)
     char *archivo, *fileRoute;
     archivo = malloc(20);
     fileRoute = malloc(30);
+    int totalSize = 0;
     strcpy(fileRoute, "./files/");
     for (int i = 1; i < argc; i++)
     {
         strcpy(archivo, argv[i]);
         strncat(fileRoute, archivo, strlen(archivo) - 4);
         datosImg datos;
-        unsigned char *img = cargarImagen(archivo, &datos, fileRoute);
+        
+        unsigned char *img = cargarImagen(archivo, &datos, fileRoute, &totalSize);
         if (img == NULL)
         {
             puts("No se pudo procesar la imagen");
@@ -33,9 +35,10 @@ void iniciarProceso(int argc, char **argv)
     clock_t end = clock();
     float transcurrido = (float)(end - start) / CLOCKS_PER_SEC;
     printf("Tiempo de ejecucion: %.3f segundos.\n", transcurrido);
+    printf("Tiempo estimado de transferencia en una VPN de 2.5 kb/s: %.3f segundos.\n", (totalSize/2500.000) + transcurrido);
 }
 
-unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute)
+unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute, int *totalSize)
 {
 
     cabeceraImg cabImg;
@@ -58,6 +61,9 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute
     fread(&cabImg, sizeof(cabeceraImg), 1, fileImg);
     fread(metadatos, sizeof(datosImg), 1, fileImg);
 
+    int tempSize = *totalSize;
+    tempSize += (int) cabImg.size;
+    *totalSize = tempSize;
     guardarInfo(type, cabImg, metadatos, fileRoute);
 
     //Lectura de la imagen
@@ -141,7 +147,6 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
     procesado = fopen(route2, "wt");
     valorMedio = valorMedio / (metadatos->alto * metadatos->ancho);
     fprintf(procesado, "El valor medio es : %d\n", valorMedio);
-    //mediana = pixeles[(metadatos->alto * metadatos->ancho) / 2];
     fprintf(procesado, "La mediana es : %d\n", mediana);
     fclose(procesado);
     fclose(file);

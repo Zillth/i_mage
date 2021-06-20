@@ -41,7 +41,7 @@ typedef struct
 
 void iniciarProceso(int, char**);
 
-unsigned char* cargarImagen(char*, datosImg*, char*);
+unsigned char* cargarImagen(char*, datosImg*, char*, int*);
 
 void guardarArchivo(datosImg*, unsigned char*, char*);
 
