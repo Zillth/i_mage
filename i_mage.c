@@ -11,6 +11,7 @@
 
 void iniciarProceso(int argc, char **argv)
 {
+    clock_t start = clock();
     char *archivo, *fileRoute;
     archivo = malloc(20);
     fileRoute = malloc(30);
@@ -29,6 +30,9 @@ void iniciarProceso(int argc, char **argv)
         guardarArchivo(&datos, img, fileRoute);
         strcpy(fileRoute, "./files/");
     }
+    clock_t end = clock();
+    float transcurrido = (float)(end - start) / CLOCKS_PER_SEC;
+    printf("Tiempo de ejecucion: %.3f segundos.\n", transcurrido);
 }
 
 unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute)
