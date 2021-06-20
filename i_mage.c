@@ -12,18 +12,24 @@
 void iniciarProceso(int argv, char **argc)
 {
     char *archivo = "lily.bmp";
+    char *fileRoute;
+    fileRoute = malloc(sizeof(archivo) + 10);
+    strcpy(fileRoute, "./files/");
+    strncat(fileRoute, archivo, strlen(archivo) - 4);
+
     datosImg datos;
-    unsigned char *img = cargarImagen(archivo, &datos);
+    unsigned char *img = cargarImagen(archivo, &datos, fileRoute);
     if (img == NULL)
     {
         puts("No se pudo procesar la imagen");
         exit(1);
     }
-    guardarArchivo(&datos, img);
+    guardarArchivo(&datos, img, fileRoute);
 }
 
-unsigned char *cargarImagen(char *filename, datosImg *metadatos)
+unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute)
 {
+
     cabeceraImg cabImg;
     unsigned char *imgData;
 
@@ -44,7 +50,7 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos)
     fread(&cabImg, sizeof(cabeceraImg), 1, fileImg);
     fread(metadatos, sizeof(datosImg), 1, fileImg);
 
-    guardarInfo(type, cabImg, metadatos);
+    guardarInfo(type, cabImg, metadatos, fileRoute);
 
     //Lectura de la imagen
     imgData = (unsigned char *)malloc((metadatos->ancho) * (metadatos->alto));
@@ -62,11 +68,19 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos)
     return imgData;
 }
 
-void guardarArchivo(datosImg *metadatos, unsigned char *pixeles)
+void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute)
 {
+    char *route, *route2;
+    route = malloc(sizeof(fileRoute) + 15);
+    route2 = malloc(sizeof(fileRoute) + 25);
+    strcpy(route, fileRoute);
+    strcpy(route2, fileRoute);
+    strcat(route, "pixeles.txt");
+    strcat(route2, "procesado.txt");
+
     FILE *file;
     int valorMedio = 0, mediana = 0;
-    file = fopen("pixeles.txt", "wt");
+    file = fopen(route, "wt");
     int x, y;
     for (y = metadatos->alto; y > 0; y--)
     {
@@ -91,7 +105,7 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles)
         }
     }
     FILE *procesado;
-    procesado = fopen("procesado.txt", "wt");
+    procesado = fopen(route2, "wt");
     valorMedio = valorMedio / (metadatos->alto * metadatos->ancho);
     fprintf(procesado, "El valor medio es : %d\n", valorMedio);
     mediana = pixeles[(metadatos->alto * metadatos->ancho) / 2];
@@ -100,10 +114,15 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles)
     fclose(file);
 }
 
-void guardarInfo(uint16_t type, cabeceraImg cabImg, datosImg *metadatos)
+void guardarInfo(uint16_t type, cabeceraImg cabImg, datosImg *metadatos, char *fileRoute)
 {
+    char *route;
+    route = malloc(sizeof(fileRoute) + 15);
+    strcpy(route, fileRoute);
+    strcat(route, "info.txt");
+
     FILE *info;
-    info = fopen("info.txt", "wt");
+    info = fopen(route, "wt");
 
     fprintf(info, "Tipo de imagen es: %d\n", type);
     fprintf(info, "El tamaño del archivo es: %d\n", cabImg.size);
