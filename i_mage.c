@@ -90,33 +90,58 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
     int valorMedio = 0, mediana = 0;
     file = fopen(route, "wt");
     int x, y;
+
+    int tablaFrecuencias[15][2];
+    for (int i = 0; i < 16; i++)
+    {
+        tablaFrecuencias[i][0] = (17) * (i + 1);
+        tablaFrecuencias[i][1] = 0;
+    }
+
+    int index, claseEncontrada, posicionFrecuencia;
+
     for (y = metadatos->alto; y > 0; y--)
     {
         for (x = 0; x < metadatos->ancho; x++)
         {
-            valorMedio += pixeles[x + y * (metadatos->ancho)];
-            fprintf(file, " %d ", pixeles[x + y * (metadatos->ancho)]);
+            claseEncontrada = 0;
+            posicionFrecuencia = 0;
+            index = x + y * (metadatos->ancho);
+            while (!claseEncontrada)
+            {
+                if (pixeles[index] <= tablaFrecuencias[posicionFrecuencia][0])
+                {
+                    tablaFrecuencias[posicionFrecuencia][1] = tablaFrecuencias[posicionFrecuencia][1] + 1;
+                    claseEncontrada = 1;
+                }
+                posicionFrecuencia++;
+            }
+
+            valorMedio += pixeles[index];
+            fprintf(file, " %d ", pixeles[index]);
         }
 
         fprintf(file, "\n");
     }
-    for (int i = 1; i < (metadatos->ancho * metadatos->alto); i++)
+
+    int frecuenciaAbsoluta = 0, mitadDatos = (int)((metadatos->alto * metadatos->ancho) / 2);
+    posicionFrecuencia = 0;
+    for (int k = 0; k < 15; k++)
     {
-        for (int j = 0; j < (metadatos->ancho * metadatos->alto) - 1; j++)
+        frecuenciaAbsoluta += tablaFrecuencias[k][1];
+        if (frecuenciaAbsoluta >= mitadDatos)
         {
-            if (pixeles[j] > pixeles[j + 1])
-            {
-                int temp = pixeles[j];
-                pixeles[j] = pixeles[j + 1];
-                pixeles[j + 1] = temp;
-            }
+            posicionFrecuencia = k;
+            break;
         }
     }
+    mediana = tablaFrecuencias[posicionFrecuencia - 1][0] + (((mitadDatos - (frecuenciaAbsoluta - tablaFrecuencias[posicionFrecuencia][1])) / tablaFrecuencias[posicionFrecuencia][1]) * 17);
+
     FILE *procesado;
     procesado = fopen(route2, "wt");
     valorMedio = valorMedio / (metadatos->alto * metadatos->ancho);
     fprintf(procesado, "El valor medio es : %d\n", valorMedio);
-    mediana = pixeles[(metadatos->alto * metadatos->ancho) / 2];
+    //mediana = pixeles[(metadatos->alto * metadatos->ancho) / 2];
     fprintf(procesado, "La mediana es : %d\n", mediana);
     fclose(procesado);
     fclose(file);
