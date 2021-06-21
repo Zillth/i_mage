@@ -145,6 +145,7 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
             break;
         }
     }
+    printf("Calculando y guardando media y mediana en el proceso: %d\n", omp_get_thread_num());
     mediana = tablaFrecuencias[posicionFrecuencia - 1][0] + (((mitadDatos - (frecuenciaAbsoluta - tablaFrecuencias[posicionFrecuencia][1])) / tablaFrecuencias[posicionFrecuencia][1]) * 17);
 
     FILE *procesado;
