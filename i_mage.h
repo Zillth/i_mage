@@ -44,7 +44,7 @@ void iniciarProceso(int, char**);
 
 unsigned char* cargarImagen(char*, datosImg*, char*, int*);
 
-void guardarArchivo(datosImg*, unsigned char*, char*);
+void guardarArchivo(datosImg*, unsigned char*, char*, int);
 
 void guardarInfo(uint16_t, cabeceraImg, datosImg*, char*);
 

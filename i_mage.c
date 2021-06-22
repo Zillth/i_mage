@@ -18,22 +18,37 @@ void iniciarProceso(int argc, char **argv)
     for (int i = 1; i < argc; i++)
     {
         char *archivo, *fileRoute;
-        printf("Procesando imagen en el proceso: %d\n", omp_get_thread_num());
         archivo = malloc(20);
         fileRoute = malloc(30);
+        char *archivoCargar;
+        archivoCargar = malloc(20);
+        printf("Procesando imagen en el proceso: %d\n", omp_get_thread_num());
         strcpy(fileRoute, "./files/");
         strcpy(archivo, argv[i]);
-        strncat(fileRoute, archivo, strlen(archivo) - 4);
+        strncat(fileRoute, archivo, strlen(archivo) - 5);
         datosImg datos;
-
-        unsigned char *img = cargarImagen(archivo, &datos, fileRoute, &totalSize);
+        int nFragmentos = 0;
+        if (archivo[strlen(archivo) - 1] == '6')
+        {
+            nFragmentos = 64;
+        }
+        else if (archivo[strlen(archivo) - 1] == '3')
+        {
+            nFragmentos = 32;
+        }
+        else
+        {
+            nFragmentos = 0;
+        }
+        strcpy(archivoCargar, "");
+        strncat(archivoCargar, archivo, strlen(archivo) - 1);
+        unsigned char *img = cargarImagen(archivoCargar, &datos, fileRoute, &totalSize);
         if (img == NULL)
         {
             puts("No se pudo procesar la imagen");
             exit(1);
         }
-        guardarArchivo(&datos, img, fileRoute);
-        //strcpy(fileRoute, "./files/");
+        guardarArchivo(&datos, img, fileRoute, nFragmentos);
     }
     clock_t end = clock();
     float transcurrido = (float)(end - start) / CLOCKS_PER_SEC;
@@ -86,7 +101,7 @@ unsigned char *cargarImagen(char *filename, datosImg *metadatos, char *fileRoute
     return imgData;
 }
 
-void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute)
+void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute, int nFragmentos)
 {
     char *route, *route2;
     route = malloc(sizeof(fileRoute) + 15);
@@ -108,7 +123,7 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
         tablaFrecuencias[i][1] = 0;
     }
 
-    int index, claseEncontrada, posicionFrecuencia;
+    int index, claseEncontrada, posicionFrecuencia, numSegmentacion = 1;
 
     for (y = metadatos->alto; y > 0; y--)
     {
@@ -134,6 +149,38 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
         fprintf(file, "\n");
     }
 
+    char *routeSegmentacion, *bufferItoa;
+    routeSegmentacion = malloc(sizeof(fileRoute) + 15);
+    bufferItoa = malloc(2);
+    FILE *segmentacion;
+
+    if (nFragmentos != 0)
+    {
+
+        unsigned int divisionFragmentos = (unsigned int)((metadatos->ancho) * (metadatos->alto)) / (nFragmentos * nFragmentos);
+        //unsigned int divisionFragmento
+        while ((metadatos->alto / divisionFragmentos) * numSegmentacion <= metadatos->alto || (metadatos->ancho / divisionFragmentos) * numSegmentacion <= metadatos->ancho)
+        {
+            itoa(numSegmentacion, bufferItoa, 10);
+            strcpy(routeSegmentacion, fileRoute);
+            strcat(routeSegmentacion, "_S_");
+            strcat(routeSegmentacion, bufferItoa);
+            strcat(routeSegmentacion, ".txt");
+
+            segmentacion = fopen(routeSegmentacion, "wt");
+            for (y = (metadatos->alto / divisionFragmentos) * numSegmentacion; y > (metadatos->alto / divisionFragmentos) * (numSegmentacion - 1); y--)
+            {
+                for (x = (metadatos->ancho / divisionFragmentos) * (numSegmentacion - 1); x < (metadatos->ancho / divisionFragmentos) * numSegmentacion; x++)
+                {
+                    index = x + y * ((metadatos->ancho / divisionFragmentos) * numSegmentacion);
+                    fprintf(segmentacion, " %d ", pixeles[index]);
+                }
+                fprintf(segmentacion, "\n");
+            }
+            fclose(segmentacion);
+            numSegmentacion++;
+        }
+    }
     int frecuenciaAbsoluta = 0, mitadDatos = (int)((metadatos->alto * metadatos->ancho) / 2);
     posicionFrecuencia = 0;
     for (int k = 0; k < 15; k++)

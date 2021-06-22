@@ -5,3 +5,6 @@
 - Ejecuta el comando **gcc  i_mage.h  i_mage.c  main.c  -o  main  -fopenmp**
 - Ejecuta el archivo .exe con el nombre de los archivos que desees procesar "./main  **nombre archivo**  **nombre archivo**  ..."
 - Listo, los archivos de texto se generaran en la carpeta "files", (Si no existe la carpeta files agregarla en el directorio principal donde tiene este proyecto)
+
+### Ejemplo de ejecución
+./main ejemplo.bmp ejemplo2.bmp ejemplo3.bmp
