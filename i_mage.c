@@ -154,12 +154,14 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
     bufferItoa = malloc(2);
     FILE *segmentacion;
 
-    if (nFragmentos != 0 && metadatos->ancho == metadatos->alto)
+    if (nFragmentos != 0)
     {
 
-        //unsigned int divisionFragmentos = (unsigned int)((metadatos->ancho) * (metadatos->alto)) / (nFragmentos * nFragmentos);
-        unsigned int divisionFragmentos = metadatos->ancho / nFragmentos;
-        while ((metadatos->alto / divisionFragmentos) * numSegmentacion <= metadatos->alto || (metadatos->ancho / divisionFragmentos) * numSegmentacion <= metadatos->ancho)
+        unsigned int divisionFragmentos = (metadatos->ancho / nFragmentos);
+        unsigned int divisionFragmentosY = (metadatos->alto / nFragmentos);
+
+        
+        while (numSegmentacion <= (divisionFragmentos * divisionFragmentosY))
         {
             itoa(numSegmentacion, bufferItoa, 10);
             strcpy(routeSegmentacion, fileRoute);
@@ -168,11 +170,11 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
             strcat(routeSegmentacion, ".txt");
 
             segmentacion = fopen(routeSegmentacion, "wt");
-            for (y = (metadatos->alto / divisionFragmentos) * numSegmentacion; y > (metadatos->alto / divisionFragmentos) * (numSegmentacion - 1); y--)
+            for (y = (metadatos->alto / divisionFragmentosY) + (metadatos->alto - (nFragmentos * numSegmentacion)); y > (metadatos->alto / divisionFragmentosY) + (metadatos->alto - (nFragmentos * (numSegmentacion + 1))); y--)
             {
-                for (x = (metadatos->ancho / divisionFragmentos) * (numSegmentacion - 1); x < (metadatos->ancho / divisionFragmentos) * numSegmentacion; x++)
+                for (x = nFragmentos * (numSegmentacion - 1); x < nFragmentos * (numSegmentacion); x++)
                 {
-                    index = x + y * ((metadatos->ancho / divisionFragmentos) * numSegmentacion);
+                    index = x + y + (nFragmentos * (numSegmentacion));
                     fprintf(segmentacion, " %d ", pixeles[index]);
                 }
                 fprintf(segmentacion, "\n");
