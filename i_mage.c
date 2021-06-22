@@ -154,11 +154,11 @@ void guardarArchivo(datosImg *metadatos, unsigned char *pixeles, char *fileRoute
     bufferItoa = malloc(2);
     FILE *segmentacion;
 
-    if (nFragmentos != 0)
+    if (nFragmentos != 0 && metadatos->ancho == metadatos->alto)
     {
 
-        unsigned int divisionFragmentos = (unsigned int)((metadatos->ancho) * (metadatos->alto)) / (nFragmentos * nFragmentos);
-        //unsigned int divisionFragmento
+        //unsigned int divisionFragmentos = (unsigned int)((metadatos->ancho) * (metadatos->alto)) / (nFragmentos * nFragmentos);
+        unsigned int divisionFragmentos = metadatos->ancho / nFragmentos;
         while ((metadatos->alto / divisionFragmentos) * numSegmentacion <= metadatos->alto || (metadatos->ancho / divisionFragmentos) * numSegmentacion <= metadatos->ancho)
         {
             itoa(numSegmentacion, bufferItoa, 10);
